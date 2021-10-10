@@ -17,7 +17,7 @@ driver = webdriver.Chrome(ChromeDriverManager().install())
 def FindTodayPrices(term:str, city:str):
     results = []
 
-    URL = f"https://craigslist.org/"
+    URL = "https://craigslist.org/"
     driver.get(URL)
     search_bar = WebDriverWait(driver, 10).until(
         EC.presence_of_element_located((By.ID, SERACH_BAR_ID)))
@@ -38,6 +38,7 @@ def FindTodayPrices(term:str, city:str):
     
     for r in rows:
         if r.tag_name == "h4": break
+        # Check if the price is 0 or not. (If it's too less amount of money, it is a scam)
         results.append(r.find_element_by_class_name(PRICE_TAG_CLASS_NAME).text)
     return results
 
