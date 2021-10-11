@@ -2,9 +2,12 @@ from selenium import webdriver
 from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.common.keys import Keys
 import csv
+import os
 
 def saveCSV(rows):
-    with open("melon.csv", 'w', newline='', encoding="utf-8") as csvfile:
+    PARENT_DIR = f"{os.path.abspath(os.getcwd())}/static/uploads"
+    os.makedirs(PARENT_DIR)
+    with open(f"{PARENT_DIR}/melon.csv", 'w', newline='', encoding="utf-8") as csvfile:
         fieldnames = ['rank', 'title', "artist", "cover"]
         writer = csv.DictWriter(csvfile, delimiter=' ', fieldnames=fieldnames)
         writer.writeheader()
