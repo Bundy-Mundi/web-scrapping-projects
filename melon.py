@@ -3,11 +3,20 @@ from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.common.keys import Keys
 import csv
 import os
+import datetime
+d = datetime.datetime.now()
 
 def saveCSV(rows):
     PARENT_DIR = f"{os.path.abspath(os.getcwd())}/static/uploads"
-    os.makedirs(PARENT_DIR)
-    with open(f"{PARENT_DIR}/melon.csv", 'w', newline='', encoding="utf-8") as csvfile:
+    if not os.path.isdir(PARENT_DIR):
+        os.makedirs(PARENT_DIR)
+    FILE_PATH = f"{PARENT_DIR}/melon-{d.year}-{d.month}-{d.day}.csv"
+    if os.path.isfile(FILE_PATH):
+        print("File exists") 
+        return
+
+    # Save into CSV format
+    with open(FILE_PATH, 'w', newline='', encoding="utf-8") as csvfile:
         fieldnames = ['rank', 'title', "artist", "cover"]
         writer = csv.DictWriter(csvfile, delimiter=' ', fieldnames=fieldnames)
         writer.writeheader()
@@ -47,5 +56,4 @@ def scrap_songs():
     return results
 
 r = scrap_songs()
-
 saveCSV(r)
