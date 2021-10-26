@@ -33,10 +33,18 @@ class CSULB:
 
     def extract_professor_names_and_classIds_bs4(self, html):
         results = []
+        course_name = None
+        course_code = None
         blocks = html.find_all(class_="courseBlock")
         for block in blocks:
             tds = block.find_all("td")
-            results.append({"name": tds[self.col_prof_name].text, "class_id": tds[self.col_class_id].text})
+            new_course_name = block.find(class_="courseTitle").text
+            new_course_code = block.find(class_="courseCode").text
+            if course_name == None or course_name != new_course_name:
+                course_name = new_course_name
+            if course_code == None or course_code != new_course_code:
+                course_code = new_course_code
+            results.append({"course_code": course_code, "course_name": course_name, "name": tds[self.col_prof_name].text, "class_id": tds[self.col_class_id].text})
         return results
 
     '''
@@ -51,7 +59,7 @@ class CSULB:
         return professors
     '''
     
-    def search_professor(self, prof:str, class_id:str, results:list):
+    def search_professor(self, course_code:str, course_name:str, prof:str, class_id:str, results:list):
         url = f"https://www.ratemyprofessors.com/search/teachers?query={prof}&sid={self.sid}"
         r = requests.get(url)
         soup = BeautifulSoup(r.content, "html.parser")
@@ -63,7 +71,7 @@ class CSULB:
             feedbacks = c.find_all(class_=self.feedbacks_class)
             would_take_again = feedbacks[0].text
             difficulty = feedbacks[1].text
-            results.append({"classID": class_id,"rating": float(rating), "fullname": fullname, "major":major, "takeAgain": would_take_again, "difficulty": float(difficulty)})
+            results.append({"course_code": course_code, "course_name": course_name, "classID": class_id,"rating": float(rating), "fullname": fullname, "major":major, "takeAgain": would_take_again, "difficulty": float(difficulty)})
     
     def search_professors_in_page(self, url:str):
         results = []
@@ -72,7 +80,7 @@ class CSULB:
         html = BeautifulSoup(r.content, "html.parser")
         r = self.extract_professor_names_and_classIds_bs4(html)
         for element in r:
-            x = threading.Thread(target=self.search_professor, args=(element["name"], element["class_id"], results,))
+            x = threading.Thread(target=self.search_professor, args=(element["course_code"], element["course_name"], element["name"], element["class_id"], results,))
             threads.append(x)
             x.start()
         for thread in threads:
