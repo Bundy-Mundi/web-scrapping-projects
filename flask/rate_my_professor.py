@@ -11,7 +11,7 @@ import time
 from bs4 import BeautifulSoup
 import requests
 
-sampleURL = "http://web.csulb.edu/depts/enrollment/registration/class_schedule/Spring_2022/By_Subject/CHEM.html"
+RATE_MY_PROFESSOR_BASEURL = "https://www.ratemyprofessors.com"
 
 class CSULB:
     def __init__(self):
@@ -70,15 +70,25 @@ class CSULB:
         url = f"https://www.ratemyprofessors.com/search/teachers?query={prof}&sid={self.sid}"
         r = requests.get(url)
         soup = BeautifulSoup(r.content, "html.parser")
-        cards = soup.find_all(class_=self.card_class)
+        cards = soup.find_all(class_=self.card_class, href=True)
         for c in cards:
+            link = f"{RATE_MY_PROFESSOR_BASEURL}{c['href']}"
             rating = c.find(class_=self.rating_class).text
             fullname = c.find(class_=self.name_class).text
             major = c.find(class_=self.major_class).text
             feedbacks = c.find_all(class_=self.feedbacks_class)
             would_take_again = feedbacks[0].text
             difficulty = feedbacks[1].text
-            results.append({"course_code": course_code, "course_name": course_name, "classID": class_id,"rating": float(rating), "fullname": fullname, "major":major, "takeAgain": would_take_again, "difficulty": float(difficulty)})
+            results.append({
+                "course_code": course_code, 
+                "course_name": course_name, 
+                "classID": class_id,
+                "rating": float(rating), 
+                "fullname": fullname, 
+                "major":major, 
+                "takeAgain": would_take_again, 
+                "difficulty": float(difficulty), 
+                "link":link})
     
     def search_professors_in_page(self, url:str):
         results = []
