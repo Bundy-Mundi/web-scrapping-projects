@@ -31,15 +31,22 @@ class CSULB:
         self.feedbacks_class = "CardFeedback__CardFeedbackNumber-lq6nix-2"
 
 
-    def extract_professor_names_and_classIds_bs4(self, html):
+    def extract_professor_names_and_class_ids_bs4(self, html):
         results = []
+        EXCEPTION = "Staff"
         course_name = None
         course_code = None
         blocks = html.find_all(class_="courseBlock")
         for block in blocks:
             tds = block.find_all("td")
+            name = tds[self.col_prof_name].text
+            class_id = tds[self.col_class_id].text
+
+            if name == EXCEPTION: continue
+
             new_course_name = block.find(class_="courseTitle").text
             new_course_code = block.find(class_="courseCode").text
+            
             if course_name == None or course_name != new_course_name:
                 course_name = new_course_name
             if course_code == None or course_code != new_course_code:
@@ -78,7 +85,7 @@ class CSULB:
         threads = []
         r = requests.get(url)
         html = BeautifulSoup(r.content, "html.parser")
-        r = self.extract_professor_names_and_classIds_bs4(html)
+        r = self.extract_professor_names_and_class_ids_bs4(html)
         for element in r:
             x = threading.Thread(target=self.search_professor, args=(element["course_code"], element["course_name"], element["name"], element["class_id"], results,))
             threads.append(x)
